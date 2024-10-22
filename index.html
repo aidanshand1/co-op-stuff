@@ -73,14 +73,16 @@
             });
         });
 
-        // Function to preprocess the image
+        // Function to preprocess the image: resize and grayscale
         function preprocessImage(image, callback) {
-            const width = image.naturalWidth;
-            const height = image.naturalHeight;
+            const maxWidth = 600; // Set maximum width
+            const aspectRatio = image.naturalWidth / image.naturalHeight;
+            const width = maxWidth;
+            const height = maxWidth / aspectRatio;
             canvas.width = width;
             canvas.height = height;
 
-            // Draw the image to canvas
+            // Draw the resized image to canvas
             ctx.drawImage(image, 0, 0, width, height);
 
             // Convert the image to grayscale
@@ -91,7 +93,6 @@
                 data[i] = brightness;    // Red
                 data[i + 1] = brightness; // Green
                 data[i + 2] = brightness; // Blue
-                // Leave alpha value (data[i + 3]) untouched
             }
             ctx.putImageData(imageData, 0, 0);
 
