@@ -20,6 +20,9 @@
     <!-- Output the recognized text -->
     <p id="ocrResult"></p>
 
+    <!-- Hidden canvas for image preprocessing -->
+    <canvas id="canvas" style="display: none;"></canvas>
+
     <!-- Include Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     
@@ -28,6 +31,8 @@
         const preview = document.getElementById('preview');
         const processImageButton = document.getElementById('processImage');
         const ocrResult = document.getElementById('ocrResult');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
 
         // Event listener for file input change
         cameraInput.addEventListener('change', function(event) {
@@ -50,20 +55,50 @@
         processImageButton.addEventListener('click', function() {
             ocrResult.innerText = 'Processing...';
 
-            Tesseract.recognize(
-                preview.src, // Image to be processed
-                'eng', // Language for OCR
-                {
-                    logger: function(m) {
-                        console.log(m);
+            // Preprocess the image
+            preprocessImage(preview, function(preprocessedImageSrc) {
+                Tesseract.recognize(
+                    preprocessedImageSrc, // Preprocessed image
+                    'eng', // Language for OCR
+                    {
+                        logger: function(m) {
+                            console.log(m);
+                        }
                     }
-                }
-            ).then(({ data: { text } }) => {
-                ocrResult.innerText = text;
-            }).catch(error => {
-                ocrResult.innerText = 'Error: ' + error;
+                ).then(({ data: { text } }) => {
+                    ocrResult.innerText = text;
+                }).catch(error => {
+                    ocrResult.innerText = 'Error: ' + error;
+                });
             });
         });
+
+        // Function to preprocess the image
+        function preprocessImage(image, callback) {
+            const width = image.naturalWidth;
+            const height = image.naturalHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw the image to canvas
+            ctx.drawImage(image, 0, 0, width, height);
+
+            // Convert the image to grayscale
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
+                data[i] = brightness;    // Red
+                data[i + 1] = brightness; // Green
+                data[i + 2] = brightness; // Blue
+                // Leave alpha value (data[i + 3]) untouched
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            // Convert canvas back to image source
+            const preprocessedImageSrc = canvas.toDataURL();
+            callback(preprocessedImageSrc);
+        }
     </script>
 </body>
 </html>
