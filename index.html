@@ -4,24 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Camera OCR App</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f8fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* Main Container */
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #preview {
+            max-width: 100%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #ocrResult {
+            font-size: 18px;
+            color: #333;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            word-wrap: break-word;
+            min-height: 50px;
+        }
+
+        /* Loading Text */
+        .loading {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h1>Take a Picture for OCR</h1>
+    <div class="container">
+        <h1>Take a Picture for OCR</h1>
 
-    <!-- Image upload input using iPhone camera -->
-    <input type="file" accept="image/*" capture="camera" id="cameraInput">
-    
-    <!-- Preview the captured image -->
-    <img id="preview" src="#" alt="Image Preview" style="max-width: 100%; display: none;">
+        <!-- Image upload input using iPhone camera -->
+        <input type="file" accept="image/*" capture="camera" id="cameraInput">
+        
+        <!-- Preview the captured image -->
+        <img id="preview" src="#" alt="Image Preview" style="display: none;">
 
-    <!-- Button to trigger OCR -->
-    <button id="processImage" style="display: none;">Process Image</button>
+        <!-- Button to trigger OCR -->
+        <button id="processImage" style="display: none;">Process Image</button>
 
-    <!-- Output the recognized text -->
-    <p id="ocrResult"></p>
+        <!-- Output the recognized text -->
+        <p id="ocrResult"></p>
 
-    <!-- Hidden canvas for image preprocessing -->
-    <canvas id="canvas" style="display: none;"></canvas>
+        <!-- Hidden canvas for image preprocessing -->
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
 
     <!-- Include Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
@@ -54,6 +138,7 @@
         // Event listener for OCR button click
         processImageButton.addEventListener('click', function() {
             ocrResult.innerText = 'Processing...';
+            ocrResult.classList.add('loading');
 
             // Preprocess the image
             preprocessImage(preview, function(preprocessedImageSrc) {
@@ -67,8 +152,10 @@
                     }
                 ).then(({ data: { text } }) => {
                     ocrResult.innerText = text;
+                    ocrResult.classList.remove('loading');
                 }).catch(error => {
                     ocrResult.innerText = 'Error: ' + error;
+                    ocrResult.classList.remove('loading');
                 });
             });
         });
